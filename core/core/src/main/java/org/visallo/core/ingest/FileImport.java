@@ -1,5 +1,6 @@
 package org.visallo.core.ingest;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
@@ -99,18 +100,15 @@ public class FileImport {
 
                 LOGGER.debug("Importing file (%d/%d): %s", fileCount + 1, totalFileCount, f.getAbsolutePath());
                 try {
-                    ClientApiImportProperty[] properties = null;
-                    boolean findExistingByFileHash = true;
-                    boolean addToWorkspace = false;
                     importFile(
                             f,
+                            f.getName(),
                             queueDuplicates,
                             conceptTypeIRI,
-                            properties,
+                            null,
                             visibilitySource,
                             workspace,
-                            addToWorkspace,
-                            findExistingByFileHash,
+                            true,
                             priority,
                             user,
                             authorizations
@@ -146,19 +144,15 @@ public class FileImport {
             User user,
             Authorizations authorizations
     ) throws Exception {
-        String conceptId = null;
-        ClientApiImportProperty[] properties = null;
-        boolean findExistingByFileHash = true;
-        boolean addToWorkspace = false;
         return importFile(
                 f,
+                f.getName(),
                 queueDuplicates,
-                conceptId,
-                properties,
+                null,
+                null,
                 visibilitySource,
                 workspace,
-                addToWorkspace,
-                findExistingByFileHash,
+                true,
                 priority,
                 user,
                 authorizations
@@ -181,6 +175,35 @@ public class FileImport {
     ) throws Exception {
         return importFile(
                 f,
+                f.getName(),
+                queueDuplicates,
+                conceptId,
+                properties,
+                visibilitySource,
+                workspace,
+                findExistingByFileHash,
+                priority,
+                user,
+                authorizations
+        );
+    }
+
+    @Deprecated
+    public Vertex importFile(
+            File f,
+            boolean queueDuplicates,
+            String conceptId,
+            ClientApiImportProperty[] properties,
+            String visibilitySource,
+            Workspace workspace,
+            boolean findExistingByFileHash,
+            Priority priority,
+            User user,
+            Authorizations authorizations
+    ) throws Exception {
+        return importFile(
+                f,
+                f.getName(),
                 queueDuplicates,
                 conceptId,
                 properties,
@@ -195,6 +218,7 @@ public class FileImport {
 
     public Vertex importFile(
             File f,
+            String originalFilename,
             boolean queueDuplicates,
             String conceptId,
             ClientApiImportProperty[] properties,
@@ -280,7 +304,10 @@ public class FileImport {
             List<VisalloPropertyUpdate> changedProperties = new ArrayList<>();
             VisalloProperties.RAW.updateProperty(changedProperties, null, vertexBuilder, rawValue, propertyMetadata);
             VisalloProperties.CONTENT_HASH.updateProperty(changedProperties, null, vertexBuilder, MULTI_VALUE_KEY, hash, propertyMetadata);
-            VisalloProperties.FILE_NAME.updateProperty(changedProperties, null, vertexBuilder, MULTI_VALUE_KEY, f.getName(), propertyMetadata);
+
+            String fileName = Strings.isNullOrEmpty(originalFilename) ? f.getName() : originalFilename;
+            VisalloProperties.FILE_NAME.updateProperty(changedProperties, null, vertexBuilder, MULTI_VALUE_KEY, fileName, propertyMetadata);
+
             VisalloProperties.MODIFIED_DATE.updateProperty(
                     changedProperties,
                     null,
@@ -395,6 +422,7 @@ public class FileImport {
             LOGGER.debug("Processing file: %s", file.getFile().getAbsolutePath());
             Vertex vertex = importFile(
                     file.getFile(),
+                    file.getOriginalFilename(),
                     true,
                     file.getConceptId(),
                     file.getProperties(),
@@ -458,6 +486,7 @@ public class FileImport {
 
     public static class FileOptions {
         private File file;
+        private String originalFilename;
         private String visibilitySource;
         private String conceptId;
         private ClientApiImportProperty[] properties;
@@ -468,6 +497,14 @@ public class FileImport {
 
         public void setFile(File file) {
             this.file = file;
+        }
+
+        public String getOriginalFilename() {
+            return originalFilename;
+        }
+
+        public void setOriginalFilename(String originalFilename) {
+            this.originalFilename = originalFilename;
         }
 
         public String getConceptId() {

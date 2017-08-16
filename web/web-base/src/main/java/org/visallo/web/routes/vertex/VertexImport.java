@@ -1,5 +1,6 @@
 package org.visallo.web.routes.vertex;
 
+import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import com.google.inject.Inject;
 import com.v5analytics.webster.ParameterizedHandler;
@@ -43,11 +44,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 public class VertexImport implements ParameterizedHandler {
     private static final VisalloLogger LOGGER = VisalloLoggerFactory.getLogger(VertexImport.class);
     private static final String PARAMS_FILENAME = "filename";
     private static final String UNKNOWN_FILENAME = "unknown_filename";
+    private static final Pattern ILLEGAL_URL_ENCODING = Pattern.compile("%{2,}()|%+(.)%+|%(.[^a-fA-F0-9]|[^a-fA-F0-9]|$)");
+    private static final Pattern ILLEGAL_FILENAME_CHARS = Pattern.compile("[\\u0000-\\u001F<>:\"/|?*\\\\]+");
     private final Graph graph;
     private final FileImport fileImport;
     private final WorkspaceRepository workspaceRepository;
@@ -70,26 +74,29 @@ public class VertexImport implements ParameterizedHandler {
         this.workspaceHelper = workspaceHelper;
     }
 
-    protected static String getFilename(Part part) {
-        String fileName = UNKNOWN_FILENAME;
-
-        final ParameterParser parser = new ParameterParser();
+    protected String getOriginalFilename(Part part) {
+        ParameterParser parser = new ParameterParser();
         parser.setLowerCaseNames(true);
 
         final Map params = parser.parse(part.getHeader(FileUploadBase.CONTENT_DISPOSITION), ';');
         if (params.containsKey(PARAMS_FILENAME)) {
-            final String name = (String) params.get(PARAMS_FILENAME);
-            if (name != null) {
-                try {
-                    fileName = URLDecoder.decode(name, "utf8").trim();
-                } catch (UnsupportedEncodingException ex) {
-                    LOGGER.error("Failed to url decode: " + name, ex);
-                    fileName = name.trim();
-                }
+            String name = (String) params.get(PARAMS_FILENAME);
+            if (!Strings.isNullOrEmpty(name)) {
+                return name;
             }
         }
 
-        return fileName;
+        return UNKNOWN_FILENAME;
+    }
+
+    protected String getSanitizedFilename(String fileName) {
+        try {
+            fileName = URLDecoder.decode(ILLEGAL_URL_ENCODING.matcher(fileName).replaceAll("_$1$2$3"), "utf8").trim();
+        } catch (UnsupportedEncodingException ex) {
+            LOGGER.error("Failed to url decode: " + fileName, ex);
+            fileName = fileName.trim();
+        }
+        return ILLEGAL_FILENAME_CHARS.matcher(fileName).replaceAll("_");
     }
 
     @Handle
@@ -159,10 +166,11 @@ public class VertexImport implements ParameterizedHandler {
         AtomicInteger propertiesIndex = new AtomicInteger(0);
         for (Part part : request.getParts()) {
             if (part.getName().equals("file")) {
-                String fileName = getFilename(part);
+                String originalFileName = getOriginalFilename(part);
+                String fileName = getSanitizedFilename(originalFileName);
                 File outFile = new File(tempDir, fileName);
                 HttpPartUtil.copyPartToFile(part, outFile);
-                addFileToFilesList(files, fileIndex.getAndIncrement(), outFile);
+                addFileToFilesList(files, fileIndex.getAndIncrement(), outFile, originalFileName);
             } else if (part.getName().equals("conceptId")) {
                 String conceptId = IOUtils.toString(part.getInputStream(), "UTF8");
                 addConceptIdToFilesList(files, conceptIndex.getAndIncrement(), conceptId);
@@ -235,9 +243,11 @@ public class VertexImport implements ParameterizedHandler {
         files.get(index).setVisibilitySource(visibilitySource);
     }
 
-    protected void addFileToFilesList(List<FileImport.FileOptions> files, int index, File file) {
+    protected void addFileToFilesList(List<FileImport.FileOptions> files, int index, File file, String originalFilename) {
         ensureFilesSize(files, index);
-        files.get(index).setFile(file);
+        FileImport.FileOptions fileOptions = files.get(index);
+        fileOptions.setFile(file);
+        fileOptions.setOriginalFilename(originalFilename);
     }
 
     private void ensureFilesSize(List<FileImport.FileOptions> files, int index) {
