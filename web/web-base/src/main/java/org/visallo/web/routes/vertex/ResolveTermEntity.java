@@ -71,6 +71,8 @@ public class ResolveTermEntity implements ParameterizedHandler {
             User user,
             Authorizations authorizations
     ) throws Exception {
+        Date now = new Date();
+
         String artifactHasEntityIri = ontologyRepository.getRequiredRelationshipIRIByIntent("artifactHasEntity", workspaceId);
 
         Workspace workspace = workspaceRepository.findById(workspaceId, user);
@@ -87,6 +89,8 @@ public class ResolveTermEntity implements ParameterizedHandler {
         Metadata metadata = new Metadata();
         Visibility defaultVisibility = visibilityTranslator.getDefaultVisibility();
         VisalloProperties.VISIBILITY_JSON_METADATA.setMetadata(metadata, visibilityJson, defaultVisibility);
+        VisalloProperties.MODIFIED_BY_METADATA.setMetadata(metadata, user.getUserId(), defaultVisibility);
+        VisalloProperties.MODIFIED_DATE_METADATA.setMetadata(metadata, now, defaultVisibility);
         Vertex vertex;
         if (resolvedVertexId != null) {
             vertex = graph.getVertex(id, authorizations);
@@ -95,7 +99,7 @@ public class ResolveTermEntity implements ParameterizedHandler {
             VisalloProperties.CONCEPT_TYPE.setProperty(vertexMutation, conceptId, defaultVisibility);
             VisalloProperties.VISIBILITY_JSON.setProperty(vertexMutation, visibilityJson, defaultVisibility);
             VisalloProperties.MODIFIED_BY.setProperty(vertexMutation, user.getUserId(), defaultVisibility);
-            VisalloProperties.MODIFIED_DATE.setProperty(vertexMutation, new Date(), defaultVisibility);
+            VisalloProperties.MODIFIED_DATE.setProperty(vertexMutation, now, defaultVisibility);
             VisalloProperties.TITLE.addPropertyValue(vertexMutation, MULTI_VALUE_KEY, title, metadata, visalloVisibility.getVisibility());
 
             if (justificationText != null) {
@@ -112,7 +116,7 @@ public class ResolveTermEntity implements ParameterizedHandler {
 
         EdgeBuilder edgeBuilder = graph.prepareEdge(artifactVertex, vertex, artifactHasEntityIri, visalloVisibility.getVisibility());
         VisalloProperties.MODIFIED_BY.setProperty(edgeBuilder, user.getUserId(), defaultVisibility);
-        VisalloProperties.MODIFIED_DATE.setProperty(edgeBuilder, new Date(), defaultVisibility);
+        VisalloProperties.MODIFIED_DATE.setProperty(edgeBuilder, now, defaultVisibility);
         VisalloProperties.VISIBILITY_JSON.setProperty(edgeBuilder, visibilityJson, defaultVisibility);
         Edge edge = edgeBuilder.save(authorizations);
 
