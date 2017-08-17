@@ -83,14 +83,16 @@
   font-style: italic;
   color: #999;
 }
+.com-visallo-csv.mode-map .modal-header .segmented-control {
+  display: flex;
+}
 .com-visallo-csv .modal-header .segmented-control {
   margin-bottom: 0;
 }
 .com-visallo-csv .modal-header .segmented-control button {
-  width: 33%;
-}
-.com-visallo-csv .modal-header .segmented-control button {
   border-width: 1px 0 1px 1px;
+  flex: 1 1 33%;
+  white-space: nowrap;
 }
 .com-visallo-csv .modal-header .segmented-control button:last-child {
   border-width: 1px;
