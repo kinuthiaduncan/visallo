@@ -62,9 +62,13 @@ define([
                     sourceConcept: self.attr.sourceConcept,
                     targetConcept: self.attr.targetConcept
                 });
-                Visibility.attachTo(self.select('visibilitySelector'), {
-                    placeholder: 'Relationship Visibility'
-                });
+
+                const visibilityAttr = { placeholder: i18n('csv.file_import.relationship.visibility.placeholder') };
+                if (self.attr.defaultVisibilitySource) {
+                    visibilityAttr.value = self.visibility || self.attr.defaultVisibilitySource;
+                }
+
+                Visibility.attachTo(self.select('visibilitySelector'), visibilityAttr);
             })
         };
 

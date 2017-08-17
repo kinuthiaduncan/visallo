@@ -196,9 +196,14 @@ define([
             ConceptSelect.attachTo(this.$node.find('.concept').teardownComponent(ConceptSelect).show(), {
                 defaultText: i18n('csv.file_import.concept.select.placeholder')
             });
-            Visibility.attachTo(this.$node.find('.entity-visibility').teardownComponent(Visibility).show(), {
-                placeholder: 'Entity Visibility'
-            });
+
+            const visibilityAttr = { placeholder: i18n('csv.file_import.entity.visibility.placeholder') };
+            if (this.attr.defaultVisibilitySource) {
+                visibilityAttr.value = this.entityVisibility || this.attr.defaultVisibilitySource;
+            }
+
+            Visibility.attachTo(this.$node.find('.entity-visibility').teardownComponent(Visibility).show(), visibilityAttr);
+
             this.$node.find('.aux_fields').teardownAllComponents().empty();
             this.$node.find('.field,.field-visibility,.identifier').hide();
         };
@@ -281,7 +286,7 @@ define([
             } else {
                 this.$node.find('.field input').removeClass('invalid');
                 this.$node.find('.field-error').hide()
-                this.setOntologyProperty(selectedProperty)
+                this.setOntologyProperty(selectedProperty, this.mapping)
             }
         };
 
@@ -306,8 +311,8 @@ define([
 
             if (mapping) {
                 Visibility.attachTo($visibility, {
-                    value: this.mapping.visibilitySource,
-                    placeholder: 'Property Visibility'
+                    value: this.mapping.visibilitySource || this.attr.defaultVisibilitySource,
+                    placeholder: i18n('csv.file_import.property.visibility.placeholder')
                 });
 
                 switch (dataType) {

@@ -109,8 +109,7 @@ public class GraphBuilderParserHandler extends BaseStructuredFileParserHandler {
         clientApiIngestPreview = new ClientApiIngestPreview();
         createdVertexIds = Lists.newArrayList();
         createdEdgeIds = Lists.newArrayList();
-        visibilityJson = VisalloProperties.VISIBILITY_JSON.getPropertyValue(structuredFileVertex);
-        checkNotNull(visibilityJson);
+        visibilityJson = new VisibilityJson(visibilityTranslator.getDefaultVisibility().getVisibilityString());
 
         if (this.publish) {
             if (!privilegeRepository.hasPrivilege(user, Privilege.PUBLISH)) {
@@ -118,9 +117,7 @@ public class GraphBuilderParserHandler extends BaseStructuredFileParserHandler {
             }
         }
 
-        if (this.publish) {
-            visibilityJson = new VisibilityJson("");
-        } else {
+        if (!this.publish) {
             visibilityJson.addWorkspace(workspaceId);
         }
         visibility = visibilityTranslator.toVisibility(visibilityJson).getVisibility();
