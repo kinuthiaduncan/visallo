@@ -194,7 +194,7 @@ define([
         this.prepareForNewEntity = function() {
             this.selectedVertex = null;
             ConceptSelect.attachTo(this.$node.find('.concept').teardownComponent(ConceptSelect).show(), {
-                defaultText: 'New Entity Concept...'
+                defaultText: i18n('csv.file_import.concept.select.placeholder')
             });
             Visibility.attachTo(this.$node.find('.entity-visibility').teardownComponent(Visibility).show(), {
                 placeholder: 'Entity Visibility'

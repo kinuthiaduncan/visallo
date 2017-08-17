@@ -49,8 +49,8 @@ define([
                 this.on(this.popover, 'visibilitychange', this.onVisibilityChanged);
                 VisibilityEditor.attachTo(this.popover.find('.visibility'), {
                     placeholder: this.attr.isEdge ?
-                        'Relationship Visibility' :
-                        'Entity Visibility',
+                        i18n('csv.file_import.relationship.visibility.placeholder') :
+                        i18n('csv.file_import.entity.visibility.placeholder'),
                     value: this.attr.object.visibilitySource
                 });
             })

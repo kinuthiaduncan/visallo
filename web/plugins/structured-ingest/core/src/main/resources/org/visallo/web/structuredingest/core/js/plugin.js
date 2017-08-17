@@ -36,7 +36,7 @@ define([
                 }).done(function(vertex) {
                     if (!_.isArray(vertex)) {
                         var title = F.vertex.title(vertex);
-                        el.textContent = title + ' Import';
+                        el.textContent = i18n('activity.tasks.type.org-visallo-structured-ingest.title', title);
                     }
                 });
             });

@@ -25,7 +25,7 @@ define([
                     </button>
                   </div>
                   <div className="table">
-                    { error ? 'Error Analyzing File' :
+                    { error ? i18n('csv.file_import.errors.analyzing.file') :
                       rows ? (
                           <table>
                             {rows.length && total ? (
@@ -49,7 +49,7 @@ define([
                             </tbody>
                           </table>
                       ) :
-                      'Loading...'
+                      i18n('csv.file_import.mapping.loading')
                     }
                     </div>
                 </div>
