@@ -63,19 +63,10 @@ define([
     function addEdges(state, { productId, edges, workspaceId }) {
         const product = state.workspaces[workspaceId].products[productId];
         if (product && product.extendedData && product.extendedData.edges) {
-            return u({
-                    workspaces: {
-                        [workspaceId]: {
-                            products: {
-                                [productId]: {
-                                    extendedData: {
-                                        edges: edges
-                                    }
-                                }
-                            }
-                        }
-                    }
-            }, state);
+            return u.updateIn(
+                `workspaces.${workspaceId}.products.${productId}.extendedData.edges`,
+                (prevEdges) => ({...prevEdges, ...edges})
+            , state)
         }
 
         return state;
