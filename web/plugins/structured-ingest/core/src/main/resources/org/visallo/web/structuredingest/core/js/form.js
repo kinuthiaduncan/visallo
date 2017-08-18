@@ -684,7 +684,7 @@ define([
                 allHeaders: self.headers,
                 key: key,
                 vertices: this.mappedObjects.vertices,
-                defaultVisibilitySource: this.attr.vertex.visibilitySource
+                defaultVisibilitySource: this.attr.visibilitySource
             });
         };
 
@@ -714,7 +714,7 @@ define([
                 targetIndex: attr[1].index,
                 sourceDisplayName: attr[0].displayName,
                 targetDisplayName: attr[1].displayName,
-                defaultVisibilitySource: this.attr.vertex.visibilitySource
+                defaultVisibilitySource: this.attr.visibilitySource
             });
         };
 
