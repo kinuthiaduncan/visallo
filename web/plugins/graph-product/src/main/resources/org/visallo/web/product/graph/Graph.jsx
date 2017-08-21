@@ -347,13 +347,13 @@ define([
                 $(document).trigger('displayInformation', { message: 'Too many paths to show, will display the first ' + MaxPathsToFocus })
             }
 
-            data.renderedPaths = data.paths.map(path => _.uniq(path.map(id => {
+            data.renderedPaths = data.paths.map(path => path.map(id => {
                 mappedIds[id] = mappedIds[id] || (
                     cy.getElementById(id).length
                         ? id : (collapsedNodes.filter(node => node.data('vertexIds').includes(id)).id() || id)
                 );
                 return mappedIds[id];
-            })));
+            }));
 
             this.setState({
                 paths: data

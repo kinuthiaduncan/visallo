@@ -825,7 +825,7 @@ define([
                     var lastNode = sourceId;
 
                     nodeIds.forEach(nodeId => {
-                        if (nodeId in nodesById) {
+                        if (nodeId in nodesById && nodeId !== lastNode) {
                             existingOrNewEdgeBetween(lastNode, nodeId, count);
                             lastNode = nodeId;
                             count = 0;
